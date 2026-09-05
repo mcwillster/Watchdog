@@ -54,7 +54,7 @@ def send_screenshot(screenshot):
     while True:
         chunk = image_bytes[byte_pointer:byte_pointer + CHUNK_SIZE]
         byte_pointer += CHUNK_SIZE
-        eof = True if byte_pointer >= total_bytes else False
+        eof = 1 if byte_pointer >= total_bytes else 0
         header = struct.pack("!IB", pack_num, eof)
         packet = header + chunk
 

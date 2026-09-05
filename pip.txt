@@ -1,3 +1,4 @@
 
 pip install pyautogui - to take screenshots
 pip install pillow - to make udp transfers faster
+pip install art - for ascii art
