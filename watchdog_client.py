@@ -44,7 +44,7 @@ def send_screenshot(screenshot):
     screenshot.save(buffer, format="JPEG", quality=85, optimize=True)
     image_bytes = buffer.getvalue()
     total_bytes = len(image_bytes)
-    print(f"Compressed size: {total_bytes} bytes (Ready for transmission).")
+    print(f"Compressed size: {total_bytes} bytes, Ready for transmission.")
 
     #Start the byte pointer and packet number at 0
     byte_pointer = 0

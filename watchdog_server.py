@@ -59,12 +59,14 @@ def main():
         command = input("Watchdog >").strip().lower()
         match command:
             case "help":
-                print("womp womp")
+                print("womp womp, help not implimented")
             case "init":
                 global HOST
                 global PORT
-                HOST = input("Enter Host IP >")
-                PORT = int(input("Enter Host Port >"))
+                host = input("Enter Host IP (leave blank for localhost) >")
+                port = int(input("Enter Host Port (leave blank for 7777) >"))
+                HOST = HOST if host == "" else host
+                PORT = PORT if port == "" else port
                 network_thread = threading.Thread(target=init_server, daemon=True)
                 network_thread.start()
                 time.sleep(.5)
